@@ -107,3 +107,58 @@
         Transition("trigger_goal_pos1_pre", g("trigger_goal_pos1"), a("!replan")),
         Transition("trigger_goal_pos1_post", g("trigger_goal_pos1 && !replanned"), a("!trigger_goal_pos1, replan, goal_as_string <= cyl_at_pose_1 == True")),
     ]
+
+#ASSIGNMENT 3
+
+for pos in ["pose_1","pose_2","pose_3","buffer"]:
+        for colour in ["blue","red","green"]:
+        
+            
+            ops[f"op_move_to_{pos}"] = Operation(
+                name = f"op_move_to_{pos}",
+                precondition = Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == above_{pos}"), 
+                a(f"robot_command = move_j, robot_run, robot_goal_frame = {pos}")),
+                postcondition = Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, robot_pose <- {pos}")),
+                effects = (),
+                to_run = Transition.default()
+        )   
+            ops[f"op_move_to_above_{pos}"] = Operation(
+                name = f"op_move_to_above_{pos}",
+                precondition = Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose != above_{pos}"), 
+                a(f"robot_command = move_j, robot_run, robot_goal_frame = above_{pos}")),
+                postcondition = Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, robot_pose = above_{pos}")),
+                effects = (),
+                to_run = Transition.default()
+        )
+
+            ops[f"op_pick_up_{colour}_from_{pos}"] = Operation(
+                name = f"op_pick_up_{colour}_from_{pos}",
+                precondition = Transition("pre", 
+                g(f"robot_pose == {pos} && {colour}_cube_at == {pos} && !gripper_run && blue_cube_at != gripper && red_cube_at != gripper && green_cube_at != gripper && !robot_run"), 
+                a(f"gripper_run, gripper_command = pick_{colour}")),
+                postcondition = Transition("post", 
+                g(f"gripper_command == done"), 
+                a(f"!gripper_run, {colour}_cube_at = gripper")),
+                effects = (),
+                to_run = Transition.default()
+            )  
+        
+            ops[f"op_place_{colour}_at_{pos}"] = Operation(
+                name = f"op_place_{colour}_at_{pos}",
+                precondition = Transition("pre", 
+                g(f"robot_pose == {pos} && blue_cube_at != {pos} && {colour}_cube_at == gripper && red_cube_at != {pos} && green_cube_at != {pos}"), 
+                a(f"gripper_run, gripper_command = place_{colour}")),
+                postcondition = Transition("post", 
+                g(f"gripper_command == done"), 
+                a(f"!gripper_run, {colour}_cube_at = {pos}")),
+                effects = (),
+                to_run = Transition.default()
+            )
+Skriv till Jesper Eriksson
+
