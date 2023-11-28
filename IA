@@ -1,0 +1,109 @@
+   poseWithAboveList = ['pos_1', 'pos_2']
+
+    for pose in poseWithAboveList:
+
+        ops[f"op_move_to_above_{pose}"] = Operation(
+            name = f"op_move_to_above_{pose}",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == lab_cam_pos"), 
+                a(f"robot_command =  move_j, robot_run, robot_goal_frame = lab_above_{pose}")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, robot_pose <- lab_above_{pose}")),
+            effects=(),
+            to_run=Transition.default()
+        )
+
+        ops[f"op_move_down_to_{pose}"] = Operation(
+            name = f"op_move_down_to_{pose}",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == lab_above_{pose}"), 
+                a(f"robot_command =  move_l, robot_run, robot_goal_frame = lab_{pose}")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, robot_pose <- lab_{pose}")),
+            effects=(),
+            to_run=Transition.default()
+        )
+
+        ops[f"op_move_from_{pose}"] = Operation(
+            name = f"op_move_from_{pose}",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == lab_{pose}"), 
+                a(f"robot_command =  move_l, robot_run, robot_goal_frame = lab_above_{pose}")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, robot_pose <- lab_above_{pose}")),
+            effects=(),
+            to_run=Transition.default()
+        )
+
+    ops[f"op_move_to_cam_pos"] = Operation(
+            name = f"op_move_to_cam_pos",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial"), 
+                a(f"robot_command =  move_j, robot_run, robot_goal_frame = lab_cam_pos")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done && gesture == two"), 
+                a(f"!robot_run, robot_pose <- lab_cam_pos")),
+            effects=(),
+            to_run=Transition.default()
+        )
+
+        
+
+    ops[f"op_pick"] = Operation(
+            name = f"op_pick",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == lab_pos_1 && cyl_at_pose_1"), 
+                a(f"robot_command =  pick, robot_run")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, suction_cup_1_occ")),
+            effects=(),
+            to_run=Transition.default()
+        )
+    ops[f"op_place"] = Operation(
+            name = f"op_place",
+            precondition=Transition("pre", 
+                g(f"!robot_run && robot_state == initial && robot_pose == lab_pos_2 && !cyl_at_pose_2 && suction_cup_1_occ"), 
+                a(f"robot_command =  place, robot_run")),
+            postcondition=Transition("post", 
+                g(f"robot_state == done"), 
+                a(f"!robot_run, !suction_cup_1_occ, cyl_at_pose_2")),
+            effects=(),
+            to_run=Transition.default()
+        )
+
+
+
+    ## operations to be completed
+    # move to pose_1
+
+    # move to pose_2
+
+    # move to pose_3
+
+    # move to above_table
+
+    # pick at pose_1 with suction_cup_1 or suction_cup_2
+
+    # pick at pose_2 with suction_cup_1 or suction_cup_2 ...
+
+    # place at pose_1 with suction_cup_1 or suction_cup_2
+
+    # place at pose_2 with suction_cup_1 or suction_cup_2 ...
+
+    # lock aruco tags
+
+    # ... you're encouraged to add other operations if necessary and you need to decide it!
+
+    # To be used to run "free" transitions. 
+    # Example of setting a goal
+    transitions: List[Transition] = [
+        Transition("trigger_goal_pos2_pre", g("trigger_goal_pos2"), a("!replan")),
+        Transition("trigger_goal_pos2_post", g("trigger_goal_pos2 && !replanned"), a("!trigger_goal_pos2, replan, goal_as_string <= cyl_at_pose_2 == True")),
+        
+        Transition("trigger_goal_pos1_pre", g("trigger_goal_pos1"), a("!replan")),
+        Transition("trigger_goal_pos1_post", g("trigger_goal_pos1 && !replanned"), a("!trigger_goal_pos1, replan, goal_as_string <= cyl_at_pose_1 == True")),
+    ]
